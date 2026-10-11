@@ -58,6 +58,9 @@ const int noteDurations[melodyLength] = {
 
 const int noteGapMs = 35;
 
+// Durata totale melodia = somma note (6160 ms) + 18 pause da 35 ms (630 ms)
+const long MELODY_TOTAL_MS = 6790;
+
 void setup() {
   pinMode(startBtn, INPUT_PULLUP);
   pinMode(zeroBtn,  INPUT_PULLUP);
@@ -115,12 +118,15 @@ void loop() {
     digitalWrite(ledPin, HIGH);
   }
 
-  // ===== BUZZER SOLO A 10 SECONDI =====
-  if (finalPhase && timeLeft == 10) {
-    if (!melodyPlayed) {
-      melodyPlayed = true;
-      playImperialMarch();   // suona solo una volta
-    }
+  // ===== BUZZER A 30 SECONDI DALLA FINE =====
+  // NB: non dipende da finalPhase (che parte a 15s), altrimenti non suonerebbe mai
+  if (running && timeLeft == 30 && !melodyPlayed) {
+    melodyPlayed = true;
+    playImperialMarch();   // suona solo una volta
+    lastSecondMillis = millis();   // evita recupero a raffica dopo il delay della melodia
+    timeLeft -= (long)((MELODY_TOTAL_MS + 500) / 1000);
+    if (timeLeft < 0) timeLeft = 0;
+    lastShown = -1;
   }
 
   // LCD
@@ -185,9 +191,9 @@ void updateLCD() {
   lastShown = timeLeft;
 
   lcd.setCursor(0,0);
-  if (!finalPhase) lcd.print("Conto alla roves");
-  else if (timeLeft == 10) lcd.print("- 10 SECONDI - ");
-  else if (timeLeft == 5)  lcd.print("- 5 SECONDI  - ");
+  if (timeLeft == 30)      lcd.print("- 30 SECONDI -  ");
+  else if (!finalPhase)    lcd.print("Conto alla roves");
+  else if (timeLeft == 5)  lcd.print("- 5 SECONDI  -  ");
   else if (timeLeft == 3)  lcd.print("!!!   3   !!!  ");
   else if (timeLeft <= 2)  lcd.print("!!! FINALE !!!  ");
   else                     lcd.print("!! ATTENZIONE !!");
@@ -199,10 +205,10 @@ void updateLCD() {
 
   lcd.setCursor(0,2);
   if (!finalPhase) lcd.print("Rele:ON  LED:ON ");
-  else             lcd.print("LED finale att.");
+  else             lcd.print("LED finale att. ");
 
   lcd.setCursor(0,3);
-  lcd.print("ReStart         Stop");
+  lcd.print("ReStart    Stop ");
 }
 
 void printTimeAt(uint8_t col, uint8_t row) {
@@ -228,7 +234,7 @@ void showEnd() {
   lcd.clear();
   lcd.setCursor(0,0); lcd.print("TEMPO SCADUTO   ");
   lcd.setCursor(0,1); lcd.print("Operazione OFF  ");
-  lcd.setCursor(0,2); lcd.print("Rele/LED/Buzz OFF");
+  lcd.setCursor(0,2); lcd.print("Rele/LED/Buz OFF");
   lcd.setCursor(0,3); lcd.print("Premi START     ");
 }
 
