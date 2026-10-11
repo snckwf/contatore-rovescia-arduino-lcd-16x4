@@ -34,6 +34,33 @@ Questo progetto mostra come realizzare un **contatore alla rovescia da 30 minuti
 - Modulo relè 5V
 - Alimentazione 5V stabile
 
+## Collegamenti elettrici
+
+Scheda: **Arduino UNO o Nano**. Pin verificati sullo sketch (`startBtn = 8`, `zeroBtn = 9`, `relayPin = 10`, `buzzer = 11`, `ledPin = 12`).
+
+| Componente | Pin componente | Arduino |
+|---|---|---|
+| LCD 16×4 I2C (indirizzo `0x27`) | VCC | 5V |
+| | GND | GND |
+| | SDA | A4 |
+| | SCL | A5 |
+| Pulsante START | un capo | D8 |
+| | altro capo | GND |
+| Pulsante STOP | un capo | D9 |
+| | altro capo | GND |
+| Modulo relè 5 V | IN | D10 |
+| | VCC | 5V |
+| | GND | GND |
+| Buzzer **passivo** | + | D11 |
+| | − | GND |
+| LED di stato | anodo (gamba lunga) | D12 tramite resistenza **220 Ω** |
+| | catodo | GND |
+
+- I pulsanti non hanno bisogno di resistenze: lo sketch usa il pull-up interno (`INPUT_PULLUP`), quindi premuto = collegato a GND.
+- Se il tuo LCD ha indirizzo `0x3F` invece di `0x27`, cambialo nella riga `LiquidCrystal_I2C lcd(0x27, 16, 4);`.
+- Il carico comandato dal relè (es. saldatore a 230 V) va sui contatti **COM/NO** del modulo: lavora con la rete scollegata e isola bene i contatti.
+- Alimentazione: 5 V stabili; con il relè attivo il consumo sale, usa un alimentatore da almeno 1 A.
+
 ## Contenuto del repository
 
 | Percorso | Descrizione |
